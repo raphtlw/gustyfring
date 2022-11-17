@@ -1,0 +1,29 @@
+PRAGMA user_version = 1;
+
+CREATE TABLE IF NOT EXISTS Member (
+  id INTEGER PRIMARY KEY,
+  tgUserId TEXT
+);
+
+CREATE TABLE IF NOT EXISTS Stat (
+  memberId INTEGER PRIMARY KEY,
+  ls INTEGER NOT NULL,
+  
+  FOREIGN KEY(memberId) REFERENCES Member(id)
+);
+
+CREATE TABLE IF NOT EXISTS Phrase (
+  id INTEGER PRIMARY KEY,
+  authorId INTEGER NOT NULL,
+  content TEXT NOT NULL UNIQUE,
+  
+  FOREIGN KEY(authorId) REFERENCES Member(id)
+);
+
+CREATE TABLE IF NOT EXISTS Response (
+  id INTEGER PRIMARY KEY,
+  phraseId INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  
+  FOREIGN KEY(phraseId) REFERENCES Phrase(id)
+);

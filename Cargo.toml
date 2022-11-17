@@ -1,0 +1,29 @@
+[package]
+name = "gustyfring"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dirs = "4"
+dotenvy = "0.15.6"
+gcloud-sdk = { version = "0.19", features = ["google-cloud-dialogflow-v2beta1"] }
+lazy_static = "1.4.0"
+miette = { version = "5.4", features = ["fancy"] }
+nanoid = "0.4"
+natural = "0.5.0"
+once_cell = "1.15"
+rand = "0.8.5"
+sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls" , "sqlite" ] }
+teloxide = { version = "0.11", features = ["macros"] }
+tokio = { version =  "1.8", features = ["rt-multi-thread", "macros"] }
+tonic = { version = "0.8", features = ["tls"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+unicode-normalization = "0.1.22"
+
+[profile.dev]
+split-debuginfo = "unpacked"
+
+[profile.release]
+lto = true
+strip = true

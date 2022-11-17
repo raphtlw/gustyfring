@@ -4,10 +4,9 @@ use std::env;
 use teloxide::{
     dispatching::UpdateHandler,
     prelude::*,
-    types::{BotCommand, MediaKind, MessageKind, ParseMode},
+    types::{MediaKind, MessageKind, ParseMode},
     utils::command::BotCommands,
 };
-use tokio::time::{sleep, Duration};
 use tracing::{debug, info, warn};
 
 use crate::{

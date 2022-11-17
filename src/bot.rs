@@ -40,6 +40,8 @@ impl Command {
             .await
             .ok()?;
 
+        debug!("Dialogflow response: {:#?}", response);
+
         if let Some(result) = &response.get_ref().query_result {
             let mcmd = Self::bot_commands()
                 .iter()

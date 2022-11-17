@@ -8,7 +8,6 @@ use gcloud_sdk::{
 };
 use miette::{IntoDiagnostic, Result};
 use nanoid::nanoid;
-use once_cell::sync::Lazy;
 use std::ops::{Deref, DerefMut};
 use tonic::{Request, Response};
 

@@ -5,9 +5,6 @@ mod utterance;
 
 use dotenvy::dotenv;
 use miette::{IntoDiagnostic, Result, WrapErr};
-use std::env;
-use teloxide::prelude::*;
-use tracing::info;
 
 use bot::*;
 

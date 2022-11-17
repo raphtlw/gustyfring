@@ -4,9 +4,10 @@ use std::env;
 use teloxide::{
     dispatching::UpdateHandler,
     prelude::*,
-    types::{BotCommand, ParseMode},
+    types::{BotCommand, MediaKind, MessageKind, ParseMode},
     utils::command::BotCommands,
 };
+use tokio::time::{sleep, Duration};
 use tracing::{debug, info, warn};
 
 use crate::{
@@ -48,7 +49,7 @@ impl Command {
                 .find(|cmd| cmd.command == result.action)?
                 .to_owned();
 
-            Self::parse(&format!("/{}", &mcmd.command), me.username()).ok()
+            Self::parse(&mcmd.command, me.username()).ok()
         } else {
             None
         }
@@ -137,14 +138,14 @@ impl Command {
                 .into_diagnostic()?;
 
                 match member {
-                    Some(mut member) => {
-                        member.ls += 1;
+                    Some(member) => {
                         sqlx::query(
                             r#"
-                            UPDATE Stat SET ls = ?
+                            UPDATE Stat SET ls = ls + 1
+                            WHERE memberId = ?
                             "#,
                         )
-                        .bind(member.ls)
+                        .bind(member.tg_user_id)
                         .execute(db())
                         .await
                         .into_diagnostic()?;
@@ -172,7 +173,17 @@ impl Command {
                     }
                 }
 
-                respond!("L has been awarded");
+                bot.send_message(msg.chat.id, "L has been awarded")
+                    .parse_mode(ParseMode::MarkdownV2)
+                    .reply_to_message_id(msg.id)
+                    .await
+                    .into_diagnostic()?;
+
+                // TODO: Have bot delete message after x time has passed
+                // bot.delete_message(msg.chat.id, sent.id)
+                //     .await
+                //     .into_diagnostic()
+                //     .unwrap();
             }
             Self::Learn(body) => {
                 let args = body.split(" | ").collect::<Vec<&str>>();
@@ -318,7 +329,24 @@ fn schema() -> UpdateHandler<miette::Error> {
         )
         .branch(
             dptree::filter_map_async(|msg: Message, me: teloxide::types::Me| async move {
-                Command::from_phrase(msg.text().unwrap().to_string(), me).await
+                debug!("Incoming text message: {:#?}", msg);
+
+                let mut input;
+                let Some(text) = msg.text() else {
+                    return None
+                };
+                input = text.to_string();
+                if text.is_empty() {
+                    // handle reply
+                    match msg.kind {
+                        MessageKind::Common(msg) => match msg.media_kind {
+                            MediaKind::Text(media) => input = media.text,
+                            _ => unimplemented!(),
+                        },
+                        _ => unimplemented!(),
+                    }
+                }
+                Command::from_phrase(input, me).await
             })
             .endpoint(command_handler),
         )
@@ -331,7 +359,7 @@ pub async fn run_bot() -> Result<()> {
         .wrap_err("TELEGRAM_API_TOKEN not found in environment")?;
     let bot = Bot::new(token);
 
-    bot.set_my_commands(vec![BotCommand::new("help", "message")])
+    bot.set_my_commands(Command::bot_commands())
         .await
         .into_diagnostic()?;
 

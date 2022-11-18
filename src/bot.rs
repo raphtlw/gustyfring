@@ -119,7 +119,7 @@ impl Command {
                     .reply_to_message()
                     .and_then(|m| m.from()) else {
                         info!("Message is not a reply");
-                        respond!("reply to the person you want the L awarded to");
+                        return Ok(None)
                     };
 
                 let member = sqlx::query_as::<_, MemberStat>(
